@@ -1,20 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
-float train[][2] = {
-    {0,0},
-    {1,1},
-    {2,4},
-    {3,9},
-    {4,16},
-    {5,25},
-    {6,36},
-    {7,49},
-    {8,64},
-    {9,81},
-    {10,100},
+float train[][3] = {
+    {0,0,0},
+	{1,0,1},
+    {0,1,1},
+    {1,1,1},
 };
+
+float sigmoidf(float x){
+	
+	return 1.0f/(1.0f + exp(-x));
+
+}
 
 #define train_count (sizeof(train)/sizeof(train[0]))
 
@@ -23,14 +23,15 @@ float rand_float(void)
     return (float) rand()/ (float) RAND_MAX;
 }
 
-float costf(float w, float b){
+float costf(float w1,float w2, float b){
 
     float result = 0.0f;
     for (size_t i=0 ;i < train_count; ++i){
     
-       float x = train[i][0];
-       float y = x*w + b;
-       float d = y - train[i][1];
+       float x1 = train[i][0];
+	   float x2 = train[i][1];
+       float y = sigmoidf(x1*w1 + x2*w2 + b);
+       float d = y - train[i][2];
        result +=d*d;
        
     };
@@ -41,24 +42,36 @@ float costf(float w, float b){
 };
 
 int main(void) {
-    
-    srand(3);
-    float eps= 1e-4;
-    float rate = 1e-3;
-    float w = rand_float()*10.0f;
+
+    srand(12);
+    float eps= 1e-3;
+    float rate = 1e-4;
+    float w1 = rand_float()*10.0f;
     float b = rand_float()*10.0f;
-    for (size_t i = 0; i < 1000; ++i){
-        float dw = (costf(w + eps,b) - costf(w,b))/eps;
-        float db = (costf(w, b + eps) - costf(w,b))/eps;
-        w -= dw*rate;
+	float w2 = rand_float()*10.0f;
+	float c = costf(w1,w2,b);
+
+    for (size_t i = 0; i < 10000; ++i){
+
+        float dw1 = (costf(w1 + eps,w2,b) - c)/eps;
+		float dw2 = (costf(w1,w2+eps,b) - c)/eps;
+        float db = (costf(w1,w2, b + eps) - c)/eps;
+
+        w1 -= dw1*rate;
+		w2 -= dw2*rate;
         b -= db*rate;
+
+		//printf("avg cost: %f\n", costf(w1,w2,b));
     };
 
     for (size_t i=0 ; i< train_count; ++i){
-        float x = train[i][0];
-        float y = x*w + b;
-        float deltaf = (train[i][1]-y)/(train[i][1]) ;
-        printf("Learned value: %f, expected value: %f,discrepancy:%f\n", y,train[i][1], deltaf);
+
+        float x1 = train[i][0];
+		float x2 = train[i][1];
+        float y = sigmoidf(x1*w1 + x2*w2 + b) ;
+        float deltaf = (train[i][2]-y)/(train[i][2]);
+
+        printf("Learned value: %f, expected value: %f,discrepancy:%f\n", y,train[i][2], deltaf);
     };
 
 return 0;
