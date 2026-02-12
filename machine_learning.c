@@ -44,16 +44,16 @@ float costf(float w1,float w2, float b){
 int main(void) {
 
     srand(42);
-    float eps  = 1e-3;
-    float rate = 1e-3;
+    float eps  = 1e-1;
+    float rate = 1e-1;
 
     float w1 = rand_float();
     float b  = rand_float();
 	float w2 = rand_float();
-	float c  = costf(w1,w2,b);
 
     for (size_t i = 0; i < 100*1000; ++i){
-
+		
+		float c = costf(w1,w2,b);
         float dw1 = (costf(w1 + eps,w2,b) - c)/eps;
 		float dw2 = (costf(w1,w2+eps,b) - c)/eps;
         float db  = (costf(w1,w2, b + eps) - c)/eps;
